@@ -402,29 +402,35 @@ class _PlateButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = prefecture.region.baseColor;
+    final isCollected = plate.collected;
     return GestureDetector(
       onTap: () => provider.togglePlate(prefecture.name, plate.name),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: plate.collected ? color : Colors.white,
-          border: Border.all(
-            color: color,
-            width: plate.collected ? 0 : 1.5,
-          ),
+          color: isCollected ? color : Colors.white,
+          border: Border.all(color: color, width: 1.5),
           borderRadius: BorderRadius.circular(4),
         ),
-        child: Text(
-          plate.name,
-          style: TextStyle(
-            fontSize: 11,
-            color: plate.collected ? Colors.white : color,
-            fontWeight: plate.collected
-                ? FontWeight.bold
-                : FontWeight.normal,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 14,
+              child: isCollected
+                  ? const Icon(Icons.check, size: 12, color: Colors.white)
+                  : null,
+            ),
+            Text(
+              plate.name,
+              style: TextStyle(
+                fontSize: 11,
+                color: isCollected ? Colors.white : color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );
