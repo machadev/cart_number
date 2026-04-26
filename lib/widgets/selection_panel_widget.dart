@@ -416,12 +416,12 @@ class _PlateButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 14,
-              child: isCollected
-                  ? const Icon(Icons.check, size: 12, color: Colors.white)
-                  : null,
+            Icon(
+              isCollected ? Icons.star : Icons.star_border,
+              size: 12,
+              color: isCollected ? Colors.amber : color,
             ),
+            const SizedBox(width: 2),
             Text(
               plate.name,
               style: TextStyle(
