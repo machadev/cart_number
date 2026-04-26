@@ -40,6 +40,7 @@ class _MainScreenState extends State<MainScreen> {
                     child: Container(
                       color: const Color(0xFFE3F2FD),
                       child: JapanMapWidget(
+                        blinkEnabled: _showFireworks,
                         onPrefectureTap: (prefName) {
                           _selectionKey.currentState
                               ?.scrollToPrefecture(prefName);

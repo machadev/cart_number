@@ -18,8 +18,13 @@ const _okinawaLatMax = 27.0;
 
 class JapanMapWidget extends StatefulWidget {
   final void Function(String prefectureName)? onPrefectureTap;
+  final bool blinkEnabled;
 
-  const JapanMapWidget({super.key, this.onPrefectureTap});
+  const JapanMapWidget({
+    super.key,
+    this.onPrefectureTap,
+    this.blinkEnabled = true,
+  });
 
   @override
   State<JapanMapWidget> createState() => _JapanMapWidgetState();
@@ -36,6 +41,18 @@ class _JapanMapWidgetState extends State<JapanMapWidget>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     )..repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(JapanMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.blinkEnabled == oldWidget.blinkEnabled) return;
+    if (widget.blinkEnabled) {
+      _blinkController.repeat(reverse: true);
+    } else {
+      _blinkController.stop();
+      _blinkController.value = 1.0;
+    }
   }
 
   @override
