@@ -15,66 +15,80 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final GlobalKey<SelectionPanelWidgetState> _selectionKey =
       GlobalKey<SelectionPanelWidgetState>();
+
   bool _showFireworks = false;
+  late CollectionProvider _provider;
+  bool _listenerRegistered = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_listenerRegistered) {
+      _provider = context.read<CollectionProvider>();
+      _provider.addListener(_onCollectionChanged);
+      _listenerRegistered = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    _provider.removeListener(_onCollectionChanged);
+    super.dispose();
+  }
+
+  void _onCollectionChanged() {
+    if (_provider.lastCompletedPrefecture != null && !_showFireworks) {
+      setState(() => _showFireworks = true);
+      _provider.clearLastCompleted();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CollectionProvider>(
-      builder: (context, provider, _) {
-        // 完成チェック
-        if (provider.lastCompletedPrefecture != null && !_showFireworks) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            setState(() => _showFireworks = true);
-            provider.clearLastCompleted();
-          });
-        }
-
-        return Scaffold(
-          body: Stack(
+    return Scaffold(
+      body: Stack(
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  // 左: 日本地図
-                  Flexible(
-                    flex: 4,
-                    child: Container(
-                      color: const Color(0xFFE3F2FD),
-                      child: JapanMapWidget(
-                        blinkEnabled: _showFireworks,
-                        onPrefectureTap: (prefName) {
-                          _selectionKey.currentState
-                              ?.scrollToPrefecture(prefName);
-                        },
-                      ),
-                    ),
-                  ),
-                  // 区切り線
-                  Container(
-                    width: 1,
-                    color: Colors.grey.shade300,
-                  ),
-                  // 右: ナンバー選択
-                  Flexible(
-                    flex: 5,
-                    child: SelectionPanelWidget(key: _selectionKey),
-                  ),
-                ],
-              ),
-              // 花火オーバーレイ
-              if (_showFireworks)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: FireworksWidget(
-                      onComplete: () {
-                        setState(() => _showFireworks = false);
-                      },
-                    ),
+              // 左: 日本地図
+              Flexible(
+                flex: 4,
+                child: Container(
+                  color: const Color(0xFFE3F2FD),
+                  child: JapanMapWidget(
+                    blinkEnabled: _showFireworks,
+                    onPrefectureTap: (prefName) {
+                      _selectionKey.currentState
+                          ?.scrollToPrefecture(prefName);
+                    },
                   ),
                 ),
+              ),
+              // 区切り線
+              Container(
+                width: 1,
+                color: Colors.grey.shade300,
+              ),
+              // 右: ナンバー選択
+              Flexible(
+                flex: 5,
+                child: SelectionPanelWidget(key: _selectionKey),
+              ),
             ],
           ),
-        );
-      },
+          // 花火オーバーレイ
+          if (_showFireworks)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: FireworksWidget(
+                  onComplete: () {
+                    setState(() => _showFireworks = false);
+                  },
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
