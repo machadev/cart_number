@@ -85,13 +85,13 @@ class SelectionPanelWidgetState extends State<SelectionPanelWidget>
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                      fontSize: 30,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Text(
                     '収集率: $rate%',
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    style: const TextStyle(color: Colors.white70, fontSize: 30),
                   ),
                 ],
               ),
@@ -104,6 +104,11 @@ class SelectionPanelWidgetState extends State<SelectionPanelWidget>
                 indicatorColor: Colors.amber,
                 labelColor: Colors.amber,
                 unselectedLabelColor: Colors.white60,
+                labelStyle: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+                unselectedLabelStyle: const TextStyle(fontSize: 28),
                 tabs: const [
                   Tab(text: '都道府県'),
                   Tab(text: '地域'),
@@ -211,7 +216,7 @@ class _RegionTab extends StatelessWidget {
                     region.displayName,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                      fontSize: 24,
                       color: region.baseColor,
                     ),
                   ),
@@ -219,7 +224,7 @@ class _RegionTab extends StatelessWidget {
                   Text(
                     '$regionCollected/$regionTotal ($regionRate%)',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 24,
                       color: region.baseColor,
                     ),
                   ),
@@ -335,7 +340,7 @@ class _PrefectureSection extends StatelessWidget {
           // ヘッダー
           Container(
             padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: pref.region.baseColor.withAlpha(20),
               borderRadius: const BorderRadius.only(
@@ -369,7 +374,7 @@ class _PrefectureSection extends StatelessWidget {
           ),
           // プレートボタン
           Padding(
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(5),
             child: Wrap(
               spacing: 4,
               runSpacing: 4,
@@ -407,7 +412,7 @@ class _PlateButton extends StatelessWidget {
       onTap: () => provider.togglePlate(prefecture.name, plate.name),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
           color: isCollected ? color : Colors.white,
           border: Border.all(color: color, width: 1.5),
