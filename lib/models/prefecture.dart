@@ -75,14 +75,14 @@ class Prefecture {
   final String name;
   final Region region;
   final List<NumberPlate> plates;
-  // Geographic polygon [[lon, lat], ...]
-  final List<List<double>> polygon;
+  // Geographic polygons [ [[lon, lat], ...], ... ]
+  final List<List<List<double>>> polygons;
 
   Prefecture({
     required this.name,
     required this.region,
     required this.plates,
-    required this.polygon,
+    required this.polygons,
   });
 
   int get totalPlates => plates.length;

@@ -11,10 +11,10 @@ const _latMin = 30.0;
 const _latMax = 46.0;
 
 // 沖縄インセットの地理的範囲
-const _okinawaLonMin = 126.0;
-const _okinawaLonMax = 128.5;
-const _okinawaLatMin = 25.5;
-const _okinawaLatMax = 27.0;
+const _okinawaLonMin = 122.5;
+const _okinawaLonMax = 131.5;
+const _okinawaLatMin = 23.5;
+const _okinawaLatMax = 27.5;
 
 class JapanMapWidget extends StatefulWidget {
   final void Function(String prefectureName)? onPrefectureTap;
@@ -108,20 +108,21 @@ class _JapanMapWidgetState extends State<JapanMapWidget>
 
     for (final pref in provider.prefectures) {
       if (pref.name == '沖縄') continue;
-      final screenPoly = pref.polygon
-          .map((p) => _geoToScreen(p[0], p[1], size))
-          .toList();
-      if (_pointInPolygon(pos, screenPoly)) {
-        widget.onPrefectureTap?.call(pref.name);
-        return;
+      for (final ring in pref.polygons) {
+        final screenPoly =
+            ring.map((p) => _geoToScreen(p[0], p[1], size)).toList();
+        if (_pointInPolygon(pos, screenPoly)) {
+          widget.onPrefectureTap?.call(pref.name);
+          return;
+        }
       }
     }
   }
 }
 
 Rect _okinawaInsetRect(Size size) {
-  const insetW = 80.0;
-  const insetH = 50.0;
+  const insetW = 130.0;
+  const insetH = 60.0;
   const margin = 8.0;
   return Rect.fromLTWH(margin, size.height - insetH - margin, insetW, insetH);
 }
@@ -209,68 +210,69 @@ class _JapanMapPainter extends CustomPainter {
   }
 
   void _drawPrefecture(Canvas canvas, Prefecture pref, Size size) {
-    if (pref.polygon.isEmpty) return;
+    if (pref.polygons.isEmpty) return;
 
-    final path = Path();
-    final points =
-        pref.polygon.map((p) => _geoToScreen(p[0], p[1], size)).toList();
-
-    path.moveTo(points[0].dx, points[0].dy);
-    for (int i = 1; i < points.length; i++) {
-      path.lineTo(points[i].dx, points[i].dy);
-    }
-    path.close();
-
-    // 塗りつぶし
     Color fillColor = pref.fillColor;
     if (pref.isComplete) {
-      // 完成時に点滅
       final alpha = (40 + blinkValue * 215).round();
       fillColor = pref.region.baseColor.withAlpha(alpha);
     }
-    canvas.drawPath(path, Paint()..color = fillColor);
+    final borderPaint = Paint()
+      ..color = pref.region.baseColor.withAlpha(180)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
 
-    // 点線の境界線
-    _drawDottedPath(
-      canvas,
-      path,
-      Paint()
-        ..color = pref.region.baseColor.withAlpha(180)
-        ..strokeWidth = 1.0
-        ..style = PaintingStyle.stroke,
-    );
+    List<Offset>? largestRing;
+    for (final ring in pref.polygons) {
+      final points =
+          ring.map((p) => _geoToScreen(p[0], p[1], size)).toList();
+      if (points.length < 3) continue;
 
-    // 都道府県名ラベル
-    _drawLabel(canvas, pref.name, points);
+      final path = Path();
+      path.moveTo(points[0].dx, points[0].dy);
+      for (int i = 1; i < points.length; i++) {
+        path.lineTo(points[i].dx, points[i].dy);
+      }
+      path.close();
+
+      canvas.drawPath(path, Paint()..color = fillColor);
+      _drawDottedPath(canvas, path, borderPaint);
+
+      if (largestRing == null || points.length > largestRing.length) {
+        largestRing = points;
+      }
+    }
+    if (largestRing != null) _drawLabel(canvas, pref.name, largestRing);
   }
 
   void _drawOkinawa(Canvas canvas, Prefecture pref, Rect inset) {
-    if (pref.polygon.isEmpty) return;
-
-    final path = Path();
-    final points =
-        pref.polygon.map((p) => _okinawaGeoToScreen(p[0], p[1], inset)).toList();
-
-    path.moveTo(points[0].dx, points[0].dy);
-    for (int i = 1; i < points.length; i++) {
-      path.lineTo(points[i].dx, points[i].dy);
-    }
-    path.close();
+    if (pref.polygons.isEmpty) return;
 
     Color fillColor = pref.fillColor;
     if (pref.isComplete) {
       final alpha = (40 + blinkValue * 215).round();
       fillColor = pref.region.baseColor.withAlpha(alpha);
     }
-    canvas.drawPath(path, Paint()..color = fillColor);
-    _drawDottedPath(
-      canvas,
-      path,
-      Paint()
-        ..color = pref.region.baseColor.withAlpha(180)
-        ..strokeWidth = 1.0
-        ..style = PaintingStyle.stroke,
-    );
+    final borderPaint = Paint()
+      ..color = pref.region.baseColor.withAlpha(180)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    for (final ring in pref.polygons) {
+      final points =
+          ring.map((p) => _okinawaGeoToScreen(p[0], p[1], inset)).toList();
+      if (points.length < 3) continue;
+
+      final path = Path();
+      path.moveTo(points[0].dx, points[0].dy);
+      for (int i = 1; i < points.length; i++) {
+        path.lineTo(points[i].dx, points[i].dy);
+      }
+      path.close();
+
+      canvas.drawPath(path, Paint()..color = fillColor);
+      _drawDottedPath(canvas, path, borderPaint);
+    }
   }
 
   void _drawDottedPath(Canvas canvas, Path path, Paint paint) {
