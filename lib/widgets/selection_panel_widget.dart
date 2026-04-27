@@ -347,12 +347,12 @@ class _PrefectureSection extends StatelessWidget {
               children: [
                 if (pref.isComplete)
                   const Text('★ ',
-                      style: TextStyle(color: Colors.amber, fontSize: 12)),
+                      style: TextStyle(color: Colors.amber, fontSize: 24)),
                 Text(
                   pref.name,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                    fontSize: 24,
                     color: pref.region.baseColor,
                   ),
                 ),
@@ -360,7 +360,7 @@ class _PrefectureSection extends StatelessWidget {
                 Text(
                   '${pref.collectedPlates}/${pref.totalPlates}  $rate%',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 20,
                     color: pref.region.baseColor,
                   ),
                 ),
@@ -418,14 +418,14 @@ class _PlateButton extends StatelessWidget {
           children: [
             Icon(
               isCollected ? Icons.star : Icons.star_border,
-              size: 12,
+              size: 20,
               color: isCollected ? Colors.amber : color,
             ),
             const SizedBox(width: 2),
             Text(
               plate.name,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 20,
                 color: isCollected ? Colors.white : color,
                 fontWeight: FontWeight.bold,
               ),
