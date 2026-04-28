@@ -197,16 +197,16 @@ class _JapanMapPainter extends CustomPainter {
         ..strokeWidth = 1.0,
     );
 
-    // 沖縄ラベル
-    const textStyle = TextStyle(fontSize: 8, color: Colors.black54);
-    final tp = TextPainter(
-      text: const TextSpan(text: '沖縄', style: textStyle),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    tp.paint(
-      canvas,
-      Offset(insetRect.left + 2, insetRect.top + 2),
-    );
+    // 沖縄ラベル（非表示）
+    // const textStyle = TextStyle(fontSize: 8, color: Colors.black54);
+    // final tp = TextPainter(
+    //   text: const TextSpan(text: '沖縄', style: textStyle),
+    //   textDirection: TextDirection.ltr,
+    // )..layout();
+    // tp.paint(
+    //   canvas,
+    //   Offset(insetRect.left + 2, insetRect.top + 2),
+    // );
   }
 
   void _drawPrefecture(Canvas canvas, Prefecture pref, Size size) {
@@ -242,7 +242,7 @@ class _JapanMapPainter extends CustomPainter {
         largestRing = points;
       }
     }
-    if (largestRing != null) _drawLabel(canvas, pref.name, largestRing);
+    // if (largestRing != null) _drawLabel(canvas, pref.name, largestRing);
   }
 
   void _drawOkinawa(Canvas canvas, Prefecture pref, Rect inset) {
