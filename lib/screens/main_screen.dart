@@ -17,7 +17,7 @@ class _MainScreenState extends State<MainScreen> {
       GlobalKey<SelectionPanelWidgetState>();
 
   bool _showFireworks = false;
-  String _fireworksPlateName = '';
+  List<String> _fireworksPlateNames = [];
   late CollectionProvider _provider;
   bool _listenerRegistered = false;
 
@@ -41,7 +41,8 @@ class _MainScreenState extends State<MainScreen> {
     if (_provider.lastCompletedPrefecture != null && !_showFireworks) {
       setState(() {
         _showFireworks = true;
-        _fireworksPlateName = _provider.lastCollectedPlateName ?? '';
+        _fireworksPlateNames =
+            List<String>.from(_provider.lastCompletedPlateNames);
       });
       _provider.clearLastCompleted();
     }
@@ -85,7 +86,7 @@ class _MainScreenState extends State<MainScreen> {
                       Positioned.fill(
                         child: IgnorePointer(
                           child: FireworksWidget(
-                            plateName: _fireworksPlateName,
+                            plateNames: _fireworksPlateNames,
                             onComplete: () {
                               setState(() => _showFireworks = false);
                             },

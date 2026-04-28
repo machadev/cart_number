@@ -8,12 +8,13 @@ class CollectionProvider extends ChangeNotifier {
   late List<Prefecture> _prefectures;
   // 最後に完成した都道府県名（花火エフェクト用）
   String? _lastCompletedPrefecture;
-  // 最後に選択した地名（テキスト花火用）
-  String? _lastCollectedPlateName;
+  // 完成した都道府県の全収集地名リスト（花火用）
+  List<String> _lastCompletedPlateNames = [];
 
   List<Prefecture> get prefectures => _prefectures;
   String? get lastCompletedPrefecture => _lastCompletedPrefecture;
-  String? get lastCollectedPlateName => _lastCollectedPlateName;
+  List<String> get lastCompletedPlateNames =>
+      List.unmodifiable(_lastCompletedPlateNames);
 
   int get totalPlates =>
       _prefectures.fold(0, (sum, p) => sum + p.totalPlates);
@@ -87,16 +88,15 @@ class CollectionProvider extends ChangeNotifier {
       _syncFujisan(plate.collected);
     }
 
-    // 最後に選択した地名を記録（収集時のみ）
-    if (plate.collected) {
-      _lastCollectedPlateName = plateName;
-    }
-
     // 完成チェック
     if (!wasComplete && pref.isComplete) {
       _lastCompletedPrefecture = prefName;
+      // 完成した都道府県の全収集地名を記録
+      _lastCompletedPlateNames =
+          pref.plates.where((p) => p.collected).map((p) => p.name).toList();
     } else {
       _lastCompletedPrefecture = null;
+      _lastCompletedPlateNames = [];
     }
 
     _saveData();
