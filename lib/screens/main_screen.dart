@@ -17,6 +17,7 @@ class _MainScreenState extends State<MainScreen> {
       GlobalKey<SelectionPanelWidgetState>();
 
   bool _showFireworks = false;
+  String _fireworksPlateName = '';
   late CollectionProvider _provider;
   bool _listenerRegistered = false;
 
@@ -38,7 +39,10 @@ class _MainScreenState extends State<MainScreen> {
 
   void _onCollectionChanged() {
     if (_provider.lastCompletedPrefecture != null && !_showFireworks) {
-      setState(() => _showFireworks = true);
+      setState(() {
+        _showFireworks = true;
+        _fireworksPlateName = _provider.lastCollectedPlateName ?? '';
+      });
       _provider.clearLastCompleted();
     }
   }
@@ -50,18 +54,45 @@ class _MainScreenState extends State<MainScreen> {
         children: [
           Row(
             children: [
-              // 左: 日本地図
+              // 左: 日本地図（暗転・花火は地図エリア内のみ）
               Flexible(
-                flex: 4,
-                child: Container(
-                  color: const Color(0xFFE3F2FD),
-                  child: JapanMapWidget(
-                    blinkEnabled: _showFireworks,
-                    onPrefectureTap: (prefName) {
-                      _selectionKey.currentState
-                          ?.scrollToPrefecture(prefName);
-                    },
-                  ),
+                flex: 3,
+                child: Stack(
+                  children: [
+                    Container(
+                      color: const Color(0xFFE3F2FD),
+                      child: JapanMapWidget(
+                        blinkEnabled: _showFireworks,
+                        onPrefectureTap: (prefName) {
+                          _selectionKey.currentState
+                              ?.scrollToPrefecture(prefName);
+                        },
+                      ),
+                    ),
+                    // 暗転オーバーレイ（かすかに地図が見える程度）
+                    AnimatedOpacity(
+                      opacity: _showFireworks ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 400),
+                      child: const IgnorePointer(
+                        child: ColoredBox(
+                          color: Color(0xD9000000), // 黒 85% 不透明
+                          child: SizedBox.expand(),
+                        ),
+                      ),
+                    ),
+                    // 花火（地図エリア内のみ）
+                    if (_showFireworks)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: FireworksWidget(
+                            plateName: _fireworksPlateName,
+                            onComplete: () {
+                              setState(() => _showFireworks = false);
+                            },
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               // 区切り線
@@ -71,22 +102,11 @@ class _MainScreenState extends State<MainScreen> {
               ),
               // 右: ナンバー選択
               Flexible(
-                flex: 5,
+                flex: 2,
                 child: SelectionPanelWidget(key: _selectionKey),
               ),
             ],
           ),
-          // 花火オーバーレイ
-          if (_showFireworks)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: FireworksWidget(
-                  onComplete: () {
-                    setState(() => _showFireworks = false);
-                  },
-                ),
-              ),
-            ),
         ],
       ),
     );

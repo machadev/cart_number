@@ -8,9 +8,12 @@ class CollectionProvider extends ChangeNotifier {
   late List<Prefecture> _prefectures;
   // 最後に完成した都道府県名（花火エフェクト用）
   String? _lastCompletedPrefecture;
+  // 最後に選択した地名（テキスト花火用）
+  String? _lastCollectedPlateName;
 
   List<Prefecture> get prefectures => _prefectures;
   String? get lastCompletedPrefecture => _lastCompletedPrefecture;
+  String? get lastCollectedPlateName => _lastCollectedPlateName;
 
   int get totalPlates =>
       _prefectures.fold(0, (sum, p) => sum + p.totalPlates);
@@ -82,6 +85,11 @@ class CollectionProvider extends ChangeNotifier {
     // 富士山の特殊処理
     if (plateName == '富士山') {
       _syncFujisan(plate.collected);
+    }
+
+    // 最後に選択した地名を記録（収集時のみ）
+    if (plate.collected) {
+      _lastCollectedPlateName = plateName;
     }
 
     // 完成チェック
