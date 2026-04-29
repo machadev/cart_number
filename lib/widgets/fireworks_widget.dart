@@ -67,17 +67,38 @@ class _FireworksWidgetState extends State<FireworksWidget>
       ));
     }
 
-    // ── 収集地名ごとにナンバープレート花火 ──
+    // ── 収集地名ごとにナンバープレート花火（前の位置と重ならない） ──
+    // プレート描画の占有領域（比率）: 幅≈0.32、高さ≈0.16
+    const plateMinDx = 0.37; // 重なり判定: X方向の最小距離
+    const plateMinDy = 0.21; // 重なり判定: Y方向の最小距離
+
+    double prevX = 0.5;
+    double prevY = 0.35;
+
     for (int i = 0; i < numPlates; i++) {
       final delayMs = plateStartMs + i * plateIntervalMs;
-      final targetX = 0.5 + (_random.nextDouble() - 0.5) * 0.30;
+
+      // 前の位置と重ならない座標を選ぶ（最大20回試行）
+      double targetX, targetY;
+      int attempts = 0;
+      do {
+        targetX = 0.15 + _random.nextDouble() * 0.70; // 0.15〜0.85
+        targetY = 0.10 + _random.nextDouble() * 0.45; // 0.10〜0.55
+        attempts++;
+      } while (attempts < 20 &&
+          (targetX - prevX).abs() < plateMinDx &&
+          (targetY - prevY).abs() < plateMinDy);
+
+      prevX = targetX;
+      prevY = targetY;
+
       _fireworks.add(_Firework(
         coreColor: const Color(0xFF006400),
         glowColor: const Color(0xFF00C853),
         startDelay: delayMs / totalMs,
         launchXRatio: 0.5,
-        targetXRatio: targetX.clamp(0.15, 0.85),
-        targetYRatio: 0.15 + _random.nextDouble() * 0.28,
+        targetXRatio: targetX,
+        targetYRatio: targetY,
         particleCount: 80,
         isTextFirework: true,
         plateName: widget.plateNames[i],
