@@ -350,9 +350,14 @@ class _PrefectureSection extends StatelessWidget {
             ),
             child: Row(
               children: [
-                if (pref.isComplete)
-                  const Text('★ ',
-                      style: TextStyle(color: Colors.amber, fontSize: 24)),
+                // 常にスペースを確保し、未収集時は透明にして高さを一定に保つ
+                Text(
+                  '★ ',
+                  style: TextStyle(
+                    color: pref.isComplete ? Colors.amber : Colors.transparent,
+                    fontSize: 24,
+                  ),
+                ),
                 Text(
                   pref.name,
                   style: TextStyle(
@@ -408,34 +413,40 @@ class _PlateButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = prefecture.region.baseColor;
     final isCollected = plate.collected;
+    // 固定幅: padding(8)*2 + star(20) + gap(2) + fontSize20*4文字(80) = 118
+    const double buttonWidth = 118;
     return GestureDetector(
       onTap: () => provider.togglePlate(prefecture.name, plate.name),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-        decoration: BoxDecoration(
-          color: isCollected ? color : Colors.white,
-          border: Border.all(color: color, width: 1.5),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isCollected ? Icons.star : Icons.star_border,
-              size: 20,
-              color: isCollected ? Colors.amber : color,
-            ),
-            const SizedBox(width: 2),
-            Text(
-              plate.name,
-              style: TextStyle(
-                fontSize: 20,
-                color: isCollected ? Colors.white : color,
-                fontWeight: FontWeight.bold,
+      child: SizedBox(
+        width: buttonWidth,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          decoration: BoxDecoration(
+            color: isCollected ? color : Colors.white,
+            border: Border.all(color: color, width: 1.5),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isCollected ? Icons.star : Icons.star_border,
+                size: 20,
+                color: isCollected ? Colors.amber : color,
               ),
-            ),
-          ],
+              const SizedBox(width: 2),
+              Text(
+                plate.name,
+                style: TextStyle(
+                  fontSize: 20,
+                  color: isCollected ? Colors.white : color,
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );
