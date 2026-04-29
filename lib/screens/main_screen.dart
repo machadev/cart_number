@@ -18,6 +18,7 @@ class _MainScreenState extends State<MainScreen> {
 
   bool _showFireworks = false;
   List<String> _fireworksPlateNames = [];
+  String _completedPrefectureName = '';
   late CollectionProvider _provider;
   bool _listenerRegistered = false;
 
@@ -39,10 +40,16 @@ class _MainScreenState extends State<MainScreen> {
 
   void _onCollectionChanged() {
     if (_provider.lastCompletedPrefecture != null && !_showFireworks) {
+      final prefName = _provider.lastCompletedPrefecture!;
       setState(() {
         _showFireworks = true;
         _fireworksPlateNames =
             List<String>.from(_provider.lastCompletedPlateNames);
+        _completedPrefectureName = prefName;
+      });
+      // 完成した都道府県へスクロール
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _selectionKey.currentState?.scrollToPrefecture(prefName);
       });
       _provider.clearLastCompleted();
     }
@@ -88,9 +95,11 @@ class _MainScreenState extends State<MainScreen> {
                           child: FireworksWidget(
                             plateNames: _fireworksPlateNames,
                             onComplete: () {
-                              // 全花火の描画完了後に暗転を解除
                               if (mounted) {
-                                setState(() => _showFireworks = false);
+                                setState(() {
+                                  _showFireworks = false;
+                                  _completedPrefectureName = '';
+                                });
                               }
                             },
                           ),
@@ -107,7 +116,26 @@ class _MainScreenState extends State<MainScreen> {
               // 右: ナンバー選択
               Flexible(
                 flex: 2,
-                child: SelectionPanelWidget(key: _selectionKey),
+                child: Stack(
+                  children: [
+                    SelectionPanelWidget(
+                      key: _selectionKey,
+                      fireworksHighlight:
+                          _showFireworks ? _completedPrefectureName : null,
+                    ),
+                    // 花火中：右パネル全体を黒・透明度1%で塗りつぶし
+                    AnimatedOpacity(
+                      opacity: _showFireworks ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 400),
+                      child: const IgnorePointer(
+                        child: ColoredBox(
+                          color: Color(0x00000000), // alpha=0（透明）
+                          child: SizedBox.expand(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

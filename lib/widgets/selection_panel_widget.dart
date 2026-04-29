@@ -4,7 +4,13 @@ import '../models/prefecture.dart';
 import '../providers/collection_provider.dart';
 
 class SelectionPanelWidget extends StatefulWidget {
-  const SelectionPanelWidget({super.key});
+  /// 花火中に強調表示する都道府県名（null = 通常表示）
+  final String? fireworksHighlight;
+
+  const SelectionPanelWidget({
+    super.key,
+    this.fireworksHighlight,
+  });
 
   @override
   State<SelectionPanelWidget> createState() => SelectionPanelWidgetState();
@@ -70,9 +76,37 @@ class SelectionPanelWidgetState extends State<SelectionPanelWidget>
         final collected = provider.totalCollected;
         final rate = (provider.globalRate * 100).toStringAsFixed(1);
 
+        // 強調表示する都道府県を取得
+        final highlightedPref = widget.fireworksHighlight != null
+            ? provider.prefectures.where(
+                (p) => p.name == widget.fireworksHighlight).firstOrNull
+            : null;
+
+        // リストエリア（暗転中はスクロール無効）
+        final listArea = AbsorbPointer(
+          absorbing: highlightedPref != null,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _PrefectureTab(
+                provider: provider,
+                scrollController: _prefScrollController,
+                onRegisterOffset: (name, offset) =>
+                    registerPrefOffset(name, offset, false),
+              ),
+              _RegionTab(
+                provider: provider,
+                scrollController: _regionScrollController,
+                onRegisterOffset: (name, offset) =>
+                    registerPrefOffset(name, offset, true),
+              ),
+            ],
+          ),
+        );
+
         return Column(
           children: [
-            // 全国統計
+            // 全国統計（暗転対象外）
             Container(
               color: Colors.blueGrey.shade700,
               padding:
@@ -96,7 +130,7 @@ class SelectionPanelWidgetState extends State<SelectionPanelWidget>
                 ],
               ),
             ),
-            // タブ
+            // タブ（暗転対象外）
             Container(
               color: Colors.blueGrey.shade800,
               child: TabBar(
@@ -115,22 +149,37 @@ class SelectionPanelWidgetState extends State<SelectionPanelWidget>
                 ],
               ),
             ),
+            // リストエリア（暗転はここだけ）
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
+              child: Stack(
                 children: [
-                  _PrefectureTab(
-                    provider: provider,
-                    scrollController: _prefScrollController,
-                    onRegisterOffset: (name, offset) =>
-                        registerPrefOffset(name, offset, false),
-                  ),
-                  _RegionTab(
-                    provider: provider,
-                    scrollController: _regionScrollController,
-                    onRegisterOffset: (name, offset) =>
-                        registerPrefOffset(name, offset, true),
-                  ),
+                  listArea,
+                  if (highlightedPref != null) ...[
+                    // 白いコンテナ（リストを隠す）
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Container(color: Colors.white),
+                      ),
+                    ),
+                    // 暗転コンテナ（透明度80%）
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Container(color: const Color(0xcc000000)),
+                      ),
+                    ),
+                    // 完成した都道府県を先頭に表示
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      child: IgnorePointer(
+                        child: _PrefectureSection(
+                          prefecture: highlightedPref,
+                          provider: provider,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -181,8 +230,10 @@ class _RegionTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const regions = Region.values;
-    return ListView.builder(
+    return LayoutBuilder(
+      builder: (context, constraints) => ListView.builder(
       controller: scrollController,
+      padding: EdgeInsets.only(bottom: constraints.maxHeight),
       itemCount: regions.length,
       itemBuilder: (context, regionIndex) {
         final region = regions[regionIndex];
@@ -238,6 +289,7 @@ class _RegionTab extends StatelessWidget {
           ],
         );
       },
+    ),
     );
   }
 }
@@ -295,13 +347,19 @@ class _OffsetTrackingListState extends State<_OffsetTrackingList> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      controller: widget.scrollController,
-      itemCount: widget.items.length,
-      itemBuilder: (context, index) {
-        return KeyedSubtree(
-          key: _keys[index],
-          child: widget.itemBuilder(widget.items[index]),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ListView.builder(
+          controller: widget.scrollController,
+          // 最後のアイテムでも最上部にスクロールできるよう底部にビューポート分のパディングを追加
+          padding: EdgeInsets.only(bottom: constraints.maxHeight),
+          itemCount: widget.items.length,
+          itemBuilder: (context, index) {
+            return KeyedSubtree(
+              key: _keys[index],
+              child: widget.itemBuilder(widget.items[index]),
+            );
+          },
         );
       },
     );
