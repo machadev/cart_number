@@ -72,6 +72,11 @@ class _FireworksWidgetState extends State<FireworksWidget>
     const plateMinDx = 0.37; // 重なり判定: X方向の最小距離
     const plateMinDy = 0.21; // 重なり判定: Y方向の最小距離
 
+    // ランダム選択用定数
+    const numbers = ['300', '500'];
+    const kanaList = 'さすせそたちつてとなにぬねのはひふほまみむめもやゆらりるろ';
+
+
     double prevX = 0.5;
     double prevY = 0.35;
 
@@ -102,6 +107,8 @@ class _FireworksWidgetState extends State<FireworksWidget>
         particleCount: 80,
         isTextFirework: true,
         plateName: widget.plateNames[i],
+        plateNumber: numbers[_random.nextInt(numbers.length)],
+        plateKana: kanaList[_random.nextInt(kanaList.length)],
       ));
     }
 
@@ -151,6 +158,8 @@ class _Firework {
   final int particleCount;
   final bool isTextFirework;
   final String plateName;
+  final String plateNumber; // 上段番号（300 or 500）
+  final String plateKana;   // 下段ひらがな
   final List<double> particleAngles;
   final List<double> particleSpeeds;
   final List<double> particleSpeedVariants;
@@ -165,6 +174,8 @@ class _Firework {
     required this.particleCount,
     required this.isTextFirework,
     required this.plateName,
+    this.plateNumber = '500',
+    this.plateKana = 'さ',
   })  : particleAngles = List.generate(
             particleCount, (i) => i * 2 * pi / particleCount),
         particleSpeeds = List.generate(
@@ -400,13 +411,13 @@ class _FireworksPainter extends CustomPainter {
     final innerLeft = left + pad;
     final innerWidth = plateW - pad * 2;
 
-    final topText = '・${fw.plateName.isNotEmpty ? fw.plateName : '地名'} 500・';
+    final topText = '・${fw.plateName.isNotEmpty ? fw.plateName : '地名'} ${fw.plateNumber}・';
     _drawStrokeText(canvas, topText, plateH * 0.28,
         left: innerLeft, top: top + plateH * 0.06, width: innerWidth,
         align: TextAlign.center,
         mainPaint: strokePaint, glowPaint: strokePaintGlow);
 
-    const kanaText = 'あ';
+    final kanaText = fw.plateKana;
     const numText = '20-27';
 
     _drawStrokeText(canvas, kanaText, plateH * 0.28,
