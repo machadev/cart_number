@@ -471,8 +471,8 @@ class _PlateButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = prefecture.region.baseColor;
     final isCollected = plate.collected;
-    // 固定幅: padding(8)*2 + star(20) + gap(2) + fontSize20*4文字(80) = 118
-    const double buttonWidth = 118;
+    // 固定幅: padding(8)*2 + star(20) + gap(2) + fontSize20*5文字(100) = 138
+    const double buttonWidth = 138;
     return GestureDetector(
       onTap: () => provider.togglePlate(prefecture.name, plate.name),
       child: SizedBox(
