@@ -38,7 +38,7 @@ class _FireworksWidgetState extends State<FireworksWidget>
     const regularIntervalMs = 500;  // 通常花火の間隔
     const plateStartMs = 2000;      // プレート花火の開始
     const plateIntervalMs = 1000;   // プレート花火の間隔
-    const tailMs = 2800;            // 最後の花火が消えるまでの余裕
+    const tailMs = 3300;            // 最後の花火が消えるまでの余裕（+500ms）
 
     final numPlates = widget.plateNames.length;
     final totalMs = (plateStartMs + numPlates * plateIntervalMs + tailMs)
@@ -84,7 +84,17 @@ class _FireworksWidgetState extends State<FireworksWidget>
       ));
     }
 
-    _controller.forward().then((_) => widget.onComplete());
+    // アニメーション完了 → 最終フレーム描画後に onComplete を呼ぶ
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) widget.onComplete();
+          });
+        });
+      }
+    });
+    _controller.forward();
   }
 
   @override
@@ -369,13 +379,13 @@ class _FireworksPainter extends CustomPainter {
     final innerLeft = left + pad;
     final innerWidth = plateW - pad * 2;
 
-    final topText = '・${fw.plateName.isNotEmpty ? fw.plateName : '地名'}599・';
+    final topText = '・${fw.plateName.isNotEmpty ? fw.plateName : '地名'} 500・';
     _drawStrokeText(canvas, topText, plateH * 0.28,
         left: innerLeft, top: top + plateH * 0.06, width: innerWidth,
         align: TextAlign.center,
         mainPaint: strokePaint, glowPaint: strokePaintGlow);
 
-    const kanaText = 'さ';
+    const kanaText = 'あ';
     const numText = '20-27';
 
     _drawStrokeText(canvas, kanaText, plateH * 0.28,

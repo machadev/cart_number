@@ -88,7 +88,10 @@ class _MainScreenState extends State<MainScreen> {
                           child: FireworksWidget(
                             plateNames: _fireworksPlateNames,
                             onComplete: () {
-                              setState(() => _showFireworks = false);
+                              // 全花火の描画完了後に暗転を解除
+                              if (mounted) {
+                                setState(() => _showFireworks = false);
+                              }
                             },
                           ),
                         ),
