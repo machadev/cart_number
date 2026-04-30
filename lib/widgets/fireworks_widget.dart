@@ -231,25 +231,24 @@ class _FireworksPainter extends CustomPainter {
       // 爆発フェーズ (0.25~1.0)
       final explodeProgress = (localProgress - launchEnd) / (1.0 - launchEnd);
       final alpha =
-          (255 * (1.0 - explodeProgress * 0.85)).round().clamp(0, 255);
-
-      // 爆発フラッシュ
-      if (explodeProgress < 0.2) {
-        final flashAlpha = ((1.0 - explodeProgress / 0.2) * 230).round();
-        canvas.drawCircle(Offset(targetX, targetY),
-            30.0 * (1.0 - explodeProgress / 0.2) + 10,
-            Paint()
-              ..color = Colors.white.withAlpha(flashAlpha)
-              ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12));
-        canvas.drawCircle(Offset(targetX, targetY),
-            15.0 * (1.0 - explodeProgress / 0.2),
-            Paint()..color = fw.glowColor.withAlpha(flashAlpha));
-      }
+          (255 * (1.0 - explodeProgress)).round().clamp(0, 255);
 
       if (fw.isTextFirework) {
-        _drawPlateSparks(canvas, fw, targetX, targetY, explodeProgress, alpha);
+        // ナンバー花火：破裂アニメーションなし、プレートのみ表示
         _drawLicensePlate(canvas, fw, targetX, targetY, explodeProgress, size);
       } else {
+        // 爆発フラッシュ（通常花火のみ）
+        if (explodeProgress < 0.2) {
+          final flashAlpha = ((1.0 - explodeProgress / 0.2) * 230).round();
+          canvas.drawCircle(Offset(targetX, targetY),
+              30.0 * (1.0 - explodeProgress / 0.2) + 10,
+              Paint()
+                ..color = Colors.white.withAlpha(flashAlpha)
+                ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12));
+          canvas.drawCircle(Offset(targetX, targetY),
+              15.0 * (1.0 - explodeProgress / 0.2),
+              Paint()..color = fw.glowColor.withAlpha(flashAlpha));
+        }
         _drawRing(canvas, fw, targetX, targetY, explodeProgress, alpha);
         _drawParticles(canvas, fw, targetX, targetY, explodeProgress, alpha,
             speeds: fw.particleSpeedVariants,
@@ -324,34 +323,6 @@ class _FireworksPainter extends CustomPainter {
     }
   }
 
-  void _drawPlateSparks(Canvas canvas, _Firework fw, double cx, double cy,
-      double explodeProgress, int alpha) {
-    for (int i = 0; i < fw.particleCount; i++) {
-      final angle = fw.particleAngles[i];
-      final speed = fw.particleSpeeds[i] * 1.1;
-      final g = 130.0 * explodeProgress * explodeProgress;
-      final px = cx + cos(angle) * speed * explodeProgress;
-      final py = cy + sin(angle) * speed * explodeProgress + g;
-      final trailProg = (explodeProgress - 0.10).clamp(0.0, 1.0);
-      final tx = cx + cos(angle) * speed * trailProg;
-      final ty = cy + sin(angle) * speed * trailProg + 130.0 * trailProg * trailProg;
-      final a = alpha.clamp(0, 255);
-      canvas.drawLine(Offset(tx, ty), Offset(px, py),
-          Paint()
-            ..color = Colors.amber.withAlpha(a)
-            ..strokeWidth = 3.0
-            ..strokeCap = StrokeCap.round);
-      final tipSize = 4.0 * (1.0 - explodeProgress * 0.7);
-      if (tipSize > 0.5) {
-        canvas.drawCircle(Offset(px, py), tipSize,
-            Paint()..color = Colors.white.withAlpha(a));
-        canvas.drawCircle(Offset(px, py), tipSize * 2.0,
-            Paint()
-              ..color = Colors.orange.withAlpha((a * 0.4).round())
-              ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2));
-      }
-    }
-  }
 
   void _drawLicensePlate(Canvas canvas, _Firework fw, double cx, double cy,
       double explodeProgress, Size size) {
