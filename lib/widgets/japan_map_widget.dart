@@ -625,3 +625,93 @@ class _JapanMapPainter extends CustomPainter {
   bool shouldRepaint(_JapanMapPainter old) =>
       old.blinkValue != blinkValue || old.prefectures != prefectures;
 }
+
+/// 都道府県のシェイプをアイコンとして描画するウィジェット
+class PrefectureShapeIcon extends StatelessWidget {
+  final String prefectureName;
+  final double size;
+  final Color color;
+  final Color strokeColor;
+
+  const PrefectureShapeIcon({
+    super.key,
+    required this.prefectureName,
+    required this.color,
+    required this.strokeColor,
+    this.size = 40,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    _JapanMapWidgetState._buildPathCache();
+
+    final paths = <Path>[];
+    for (final (idx, gesture, name) in _prefectureArea) {
+      if (gesture && name == prefectureName && idx < _JapanMapWidgetState._cachedPaths.length) {
+        paths.add(_JapanMapWidgetState._cachedPaths[idx]);
+      }
+    }
+
+    if (paths.isEmpty) return SizedBox(width: size, height: size);
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _PrefectureShapePainter(paths: paths, color: color, strokeColor: strokeColor),
+      ),
+    );
+  }
+}
+
+class _PrefectureShapePainter extends CustomPainter {
+  final List<Path> paths;
+  final Color color;
+  final Color strokeColor;
+
+  const _PrefectureShapePainter({required this.paths, required this.color, required this.strokeColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (paths.isEmpty) return;
+
+    Rect? bounds;
+    for (final path in paths) {
+      final b = path.getBounds();
+      if (b.isEmpty) continue;
+      bounds = bounds == null ? b : bounds.expandToInclude(b);
+    }
+    if (bounds == null || bounds.isEmpty) return;
+
+    const padding = 2.0;
+    final scaleX = (size.width - padding * 2) / bounds.width;
+    final scaleY = (size.height - padding * 2) / bounds.height;
+    final scale = scaleX < scaleY ? scaleX : scaleY;
+
+    final dx = padding + (size.width - padding * 2 - bounds.width * scale) / 2 - bounds.left * scale;
+    final dy = padding + (size.height - padding * 2 - bounds.height * scale) / 2 - bounds.top * scale;
+
+    canvas.save();
+    canvas.translate(dx, dy);
+    canvas.scale(scale);
+
+    final fillPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    final strokePaint = Paint()
+      ..color = strokeColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5 / scale;
+
+    for (final path in paths) {
+      canvas.drawPath(path, fillPaint);
+      canvas.drawPath(path, strokePaint);
+    }
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_PrefectureShapePainter old) =>
+      old.paths != paths || old.color != color || old.strokeColor != strokeColor;
+}

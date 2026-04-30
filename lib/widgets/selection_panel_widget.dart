@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/prefecture.dart';
 import '../providers/collection_provider.dart';
+import 'japan_map_widget.dart';
 
 class SelectionPanelWidget extends StatefulWidget {
   /// 花火中に強調表示する都道府県名（null = 通常表示）
@@ -408,21 +409,30 @@ class _PrefectureSection extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // 常にスペースを確保し、未収集時は透明にして高さを一定に保つ
-                Text(
-                  '★ ',
-                  style: TextStyle(
-                    color: pref.isComplete ? Colors.amber : Colors.transparent,
-                    fontSize: 24,
+                PrefectureShapeIcon(
+                  prefectureName: pref.name,
+                  color: Colors.white,
+                  strokeColor: pref.region.baseColor,
+                  size: 36,
+                ),
+                const SizedBox(width: 6),
+                SizedBox(
+                  width: 96,
+                  child: Text(
+                    pref.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                      color: pref.region.baseColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-                Text(
-                  pref.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                    color: pref.region.baseColor,
-                  ),
+                Icon(
+                  Icons.workspace_premium,
+                  color: pref.isComplete ? Colors.amber : Colors.transparent,
+                  size: 28,
                 ),
                 const Spacer(),
                 Text(
