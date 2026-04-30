@@ -416,24 +416,8 @@ class _PrefectureSection extends StatelessWidget {
                   size: 36,
                 ),
                 const SizedBox(width: 6),
-                SizedBox(
-                  width: 96,
-                  child: Text(
-                    pref.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                      color: pref.region.baseColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ),
-                Icon(
-                  Icons.workspace_premium,
-                  color: pref.isComplete ? Colors.amber : Colors.transparent,
-                  size: 28,
-                ),
+                _PrefectureNameLabel(prefecture: pref),
+                if (pref.isComplete) const _CrownIcon(),
                 const Spacer(),
                 Text(
                   '${pref.collectedPlates}/${pref.totalPlates}  $rate%',
@@ -462,6 +446,57 @@ class _PrefectureSection extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PrefectureNameLabel extends StatelessWidget {
+  final Prefecture prefecture;
+
+  const _PrefectureNameLabel({required this.prefecture});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 96,
+      child: Text(
+        prefecture.name,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 24,
+          color: prefecture.region.baseColor,
+        ),
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
+      ),
+    );
+  }
+}
+
+class _CrownIcon extends StatelessWidget {
+  const _CrownIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Icon(
+      Icons.workspace_premium,
+      color: Colors.amber,
+      size: 28,
+    );
+  }
+}
+
+class _PlateStarIcon extends StatelessWidget {
+  final bool isCollected;
+
+  const _PlateStarIcon({required this.isCollected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      Icons.star,
+      size: 20,
+      color: isCollected ? Colors.amber : Colors.transparent,
     );
   }
 }
@@ -496,22 +531,20 @@ class _PlateButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(4),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                isCollected ? Icons.star : Icons.star_border,
-                size: 20,
-                color: isCollected ? Colors.amber : color,
-              ),
+              _PlateStarIcon(isCollected: isCollected),
               const SizedBox(width: 2),
-              Text(
-                plate.name,
-                style: TextStyle(
-                  fontSize: 20,
-                  color: isCollected ? Colors.white : color,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  plate.name,
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: isCollected ? Colors.white : color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
