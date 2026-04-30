@@ -371,6 +371,7 @@ class JapanMapWidget extends StatefulWidget {
 class _JapanMapWidgetState extends State<JapanMapWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _blinkController;
+  final TransformationController _transformController = TransformationController();
 
   // SVGパスとその重心をキャッシュ
   static final List<Path> _cachedPaths = [];
@@ -428,6 +429,7 @@ class _JapanMapWidgetState extends State<JapanMapWidget>
   @override
   void dispose() {
     _blinkController.dispose();
+    _transformController.dispose();
     super.dispose();
   }
 
@@ -438,19 +440,24 @@ class _JapanMapWidgetState extends State<JapanMapWidget>
         return AnimatedBuilder(
           animation: _blinkController,
           builder: (context, _) {
-            return GestureDetector(
-              onTapDown: (details) => _handleTap(
-                details.localPosition,
-                provider,
-                context,
-              ),
-              child: CustomPaint(
-                painter: _JapanMapPainter(
-                  prefectures: provider.prefectures,
-                  blinkValue: _blinkController.value,
-                  svgPaths: _cachedPaths,
+            return InteractiveViewer(
+              transformationController: _transformController,
+              minScale: 1.0,
+              maxScale: 6.0,
+              child: GestureDetector(
+                onTapUp: (details) => _handleTap(
+                  details.localPosition,
+                  provider,
+                  context,
                 ),
-                child: const SizedBox.expand(),
+                child: CustomPaint(
+                  painter: _JapanMapPainter(
+                    prefectures: provider.prefectures,
+                    blinkValue: _blinkController.value,
+                    svgPaths: _cachedPaths,
+                  ),
+                  child: const SizedBox.expand(),
+                ),
               ),
             );
           },
