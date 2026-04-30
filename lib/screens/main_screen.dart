@@ -19,7 +19,6 @@ class _MainScreenState extends State<MainScreen> {
   bool _showFireworks = false;
   bool _showNationalConquest = false;
   List<String> _fireworksPlateNames = [];
-  String _completedPrefectureName = '';
   late CollectionProvider _provider;
   bool _listenerRegistered = false;
 
@@ -46,7 +45,6 @@ class _MainScreenState extends State<MainScreen> {
         _showFireworks = true;
         _fireworksPlateNames =
             List<String>.from(_provider.lastCompletedPlateNames);
-        _completedPrefectureName = prefName;
       });
       // 完成した都道府県へスクロール
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -61,63 +59,19 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Row(children: [
-              // 左: 日本地図（暗転・花火は地図エリア内のみ）
+          Row(
+            children: [
+              // 左: 日本地図
               Flexible(
                 flex: 3,
-                child: Stack(
-                  children: [
-                    Container(
-                      color: const Color(0xFFE3F2FD),
-                      child: JapanMapWidget(
-                        blinkEnabled: _showFireworks,
-                        onPrefectureTap: (prefName) {
-                          _selectionKey.currentState
-                              ?.scrollToPrefecture(prefName);
-                        },
-                      ),
-                    ),
-                    // 暗転オーバーレイ（かすかに地図が見える程度）
-                    AnimatedOpacity(
-                      opacity: _showFireworks ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 400),
-                      child: const IgnorePointer(
-                        child: ColoredBox(
-                          color: Color(0xD9000000), // 黒 85% 不透明
-                          child: SizedBox.expand(),
-                        ),
-                      ),
-                    ),
-                    // 花火（地図エリア内のみ）
-                    if (_showFireworks)
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: FireworksWidget(
-                            plateNames: _fireworksPlateNames,
-                            onComplete: () {
-                              if (!mounted) return;
-                              final allComplete =
-                                  _provider.totalPlates > 0 &&
-                                  _provider.totalCollected == _provider.totalPlates;
-                              setState(() {
-                                _showFireworks = false;
-                                _completedPrefectureName = '';
-                              });
-                              if (allComplete) {
-                                Future.delayed(
-                                  const Duration(milliseconds: 500),
-                                  () {
-                                    if (mounted) {
-                                      setState(() => _showNationalConquest = true);
-                                    }
-                                  },
-                                );
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                  ],
+                child: Container(
+                  color: const Color(0xFFE3F2FD),
+                  child: JapanMapWidget(
+                    blinkEnabled: _showFireworks,
+                    onPrefectureTap: (prefName) {
+                      _selectionKey.currentState?.scrollToPrefecture(prefName);
+                    },
+                  ),
                 ),
               ),
               // 区切り線
@@ -128,29 +82,51 @@ class _MainScreenState extends State<MainScreen> {
               // 右: ナンバー選択
               Flexible(
                 flex: 2,
-                child: Stack(
-                  children: [
-                    SelectionPanelWidget(
-                      key: _selectionKey,
-                      fireworksHighlight:
-                          _showFireworks ? _completedPrefectureName : null,
-                    ),
-                    // 花火中：右パネル全体を黒・透明度1%で塗りつぶし
-                    AnimatedOpacity(
-                      opacity: _showFireworks ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 400),
-                      child: const IgnorePointer(
-                        child: ColoredBox(
-                          color: Color(0x00000000), // alpha=0（透明）
-                          child: SizedBox.expand(),
-                        ),
-                      ),
-                    ),
-                  ],
+                child: SelectionPanelWidget(
+                  key: _selectionKey,
                 ),
               ),
             ],
           ),
+          // 暗転オーバーレイ（画面全体）
+          AnimatedOpacity(
+            opacity: _showFireworks ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 400),
+            child: const IgnorePointer(
+              child: ColoredBox(
+                color: Color(0xD9000000),
+                child: SizedBox.expand(),
+              ),
+            ),
+          ),
+          // 花火（画面全体）
+          if (_showFireworks)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: FireworksWidget(
+                  plateNames: _fireworksPlateNames,
+                  onComplete: () {
+                    if (!mounted) return;
+                    final allComplete =
+                        _provider.totalPlates > 0 &&
+                        _provider.totalCollected == _provider.totalPlates;
+                    setState(() {
+                      _showFireworks = false;
+                    });
+                    if (allComplete) {
+                      Future.delayed(
+                        const Duration(milliseconds: 500),
+                        () {
+                          if (mounted) {
+                            setState(() => _showNationalConquest = true);
+                          }
+                        },
+                      );
+                    }
+                  },
+                ),
+              ),
+            ),
           if (_showNationalConquest)
             _NationalConquestOverlay(
               onDismiss: () => setState(() => _showNationalConquest = false),
