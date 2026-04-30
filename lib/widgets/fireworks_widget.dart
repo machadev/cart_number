@@ -51,6 +51,9 @@ class _FireworksWidgetState extends State<FireworksWidget>
 
     final shuffled = List<List<Color>>.from(_colorSets)..shuffle(_random);
 
+    // 通常花火1発あたりの固定表示時間（ms）
+    const regularDurationMs = 3500;
+
     // ── 最初の3発：通常花火 ──
     for (int i = 0; i < 3; i++) {
       final delayMs = i * regularIntervalMs;
@@ -58,6 +61,7 @@ class _FireworksWidgetState extends State<FireworksWidget>
         coreColor: shuffled[i][0],
         glowColor: shuffled[i][1],
         startDelay: delayMs / totalMs,
+        endDelay: ((delayMs + regularDurationMs) / totalMs).clamp(0.0, 1.0),
         launchXRatio: 0.5,
         targetXRatio: 0.10 + _random.nextDouble() * 0.80,
         targetYRatio: 0.06 + _random.nextDouble() * 0.46,
@@ -178,6 +182,7 @@ class _Firework {
   final Color coreColor;
   final Color glowColor;
   final double startDelay;
+  final double endDelay;   // このアニメーションが終わる正規化時刻（1.0 = 全体終了）
   final double launchXRatio;
   final double targetXRatio;
   final double targetYRatio;
@@ -194,6 +199,7 @@ class _Firework {
     required this.coreColor,
     required this.glowColor,
     required this.startDelay,
+    this.endDelay = 1.0,
     required this.launchXRatio,
     required this.targetXRatio,
     required this.targetYRatio,
@@ -222,8 +228,9 @@ class _FireworksPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (final fw in fireworks) {
       if (progress < fw.startDelay) continue;
+      final localRange = fw.endDelay - fw.startDelay;
       final localProgress =
-          ((progress - fw.startDelay) / (1.0 - fw.startDelay)).clamp(0.0, 1.0);
+          ((progress - fw.startDelay) / localRange).clamp(0.0, 1.0);
 
       final targetX = size.width * fw.targetXRatio;
       final targetY = size.height * fw.targetYRatio;
