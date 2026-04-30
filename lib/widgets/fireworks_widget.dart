@@ -37,7 +37,7 @@ class _FireworksWidgetState extends State<FireworksWidget>
     // ── タイミング設計（ms） ──
     const regularIntervalMs = 500;  // 通常花火の間隔
     const plateStartMs = 2000;      // プレート花火の開始
-    const plateIntervalMs = 1000;   // プレート花火の間隔
+    const plateIntervalMs = 750;   // プレート花火の間隔
     const tailMs = 3300;            // 最後の花火が消えるまでの余裕（+500ms）
 
     final numPlates = widget.plateNames.length;
@@ -97,6 +97,12 @@ class _FireworksWidgetState extends State<FireworksWidget>
     // 全プレート花火の位置を事前決定（最大100回試行 / 枚）
     final List<(double, double)> platePositions = [];
     for (int i = 0; i < numPlates; i++) {
+      // 1発目は固定位置：横＝中央、縦＝上から1/3
+      if (i == 0) {
+        platePositions.add((0.5, 1.0 / 3.0));
+        continue;
+      }
+
       double bestX = 0.5, bestY = 0.25;
       double bestOverlap = double.infinity;
 
