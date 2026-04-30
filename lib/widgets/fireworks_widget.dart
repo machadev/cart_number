@@ -67,35 +67,61 @@ class _FireworksWidgetState extends State<FireworksWidget>
       ));
     }
 
-    // ── 収集地名ごとにナンバープレート花火（前の位置と重ならない） ──
-    // プレート描画の占有領域（比率）: 幅≈0.32、高さ≈0.16
-    const plateMinDx = 0.37; // 重なり判定: X方向の最小距離
-    const plateMinDy = 0.21; // 重なり判定: Y方向の最小距離
+    // ── ナンバープレート花火の位置を事前計算 ──
+    // プレートの占有領域（画面比率）: 幅 0.32、高さ 0.16（= 0.32 × 165/330）
+    const pw = 0.32; // plate width ratio
+    const ph = 0.16; // plate height ratio
+    const maxOverlapFraction = 0.25; // 許容重なり率 25%
+
+    // 重なり率を計算（面積比）
+    double overlapFraction(double ax, double ay, double bx, double by) {
+      final ox = (pw - (ax - bx).abs()).clamp(0.0, pw);
+      final oy = (ph - (ay - by).abs()).clamp(0.0, ph);
+      return (ox * oy) / (pw * ph);
+    }
+
+    // 全既存位置との最大重なり率を返す
+    double maxOverlapWith(List<(double, double)> placed, double tx, double ty) {
+      double worst = 0.0;
+      for (final (px, py) in placed) {
+        final f = overlapFraction(tx, ty, px, py);
+        if (f > worst) worst = f;
+      }
+      return worst;
+    }
+
+    // 全プレート花火の位置を事前決定（最大100回試行 / 枚）
+    final List<(double, double)> platePositions = [];
+    for (int i = 0; i < numPlates; i++) {
+      double bestX = 0.5, bestY = 0.25;
+      double bestOverlap = double.infinity;
+
+      for (int attempt = 0; attempt < 100; attempt++) {
+        final tx = 0.15 + _random.nextDouble() * 0.70;
+        final ty = 0.10 + _random.nextDouble() * 0.45;
+        final overlap = maxOverlapWith(platePositions, tx, ty);
+        if (overlap <= maxOverlapFraction) {
+          bestX = tx;
+          bestY = ty;
+          break; // 25%以下を確認 → 即採用
+        }
+        if (overlap < bestOverlap) {
+          bestOverlap = overlap;
+          bestX = tx;
+          bestY = ty;
+        }
+      }
+      platePositions.add((bestX, bestY));
+    }
 
     // ランダム選択用定数
     const numbers = ['300', '500'];
     const kanaList = 'さすせそたちつてとなにぬねのはひふほまみむめもやゆらりるろ';
 
-
-    double prevX = 0.5;
-    double prevY = 0.35;
-
+    // ── 収集地名ごとにナンバープレート花火を生成 ──
     for (int i = 0; i < numPlates; i++) {
       final delayMs = plateStartMs + i * plateIntervalMs;
-
-      // 前の位置と重ならない座標を選ぶ（最大20回試行）
-      double targetX, targetY;
-      int attempts = 0;
-      do {
-        targetX = 0.15 + _random.nextDouble() * 0.70; // 0.15〜0.85
-        targetY = 0.10 + _random.nextDouble() * 0.45; // 0.10〜0.55
-        attempts++;
-      } while (attempts < 20 &&
-          (targetX - prevX).abs() < plateMinDx &&
-          (targetY - prevY).abs() < plateMinDy);
-
-      prevX = targetX;
-      prevY = targetY;
+      final (targetX, targetY) = platePositions[i];
 
       _fireworks.add(_Firework(
         coreColor: const Color(0xFF006400),
