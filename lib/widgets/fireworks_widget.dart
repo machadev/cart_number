@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 class FireworksWidget extends StatefulWidget {
@@ -20,6 +22,20 @@ class _FireworksWidgetState extends State<FireworksWidget>
   late AnimationController _controller;
   final List<_Firework> _fireworks = [];
   final Random _random = Random();
+
+  final List<Timer> _soundTimers = [];
+  final List<AudioPlayer> _players = [];
+
+  Future<void> _playExplosion() async {
+    final player = AudioPlayer();
+    _players.add(player);
+    try {
+      await player.play(AssetSource('sounds/explosion.mp3'));
+    } finally {
+      _players.remove(player);
+      await player.dispose();
+    }
+  }
 
   static const _colorSets = [
     [Colors.red, Colors.orange],
@@ -148,6 +164,14 @@ class _FireworksWidgetState extends State<FireworksWidget>
       ));
     }
 
+    // 爆発音をスケジュール
+    const launchEnd = 0.25;
+    for (final fw in _fireworks) {
+      final explosionNorm = fw.startDelay + (fw.endDelay - fw.startDelay) * launchEnd;
+      final explosionMs  = (explosionNorm * totalMs).round();
+      _soundTimers.add(Timer(Duration(milliseconds: explosionMs), _playExplosion));
+    }
+
     // アニメーション完了 → 最終フレーム描画後に onComplete を呼ぶ
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -163,6 +187,14 @@ class _FireworksWidgetState extends State<FireworksWidget>
 
   @override
   void dispose() {
+    for (final t in _soundTimers) {
+      t.cancel();
+    }
+    for (final p in List<AudioPlayer>.from(_players)) {
+      p.stop();
+      p.dispose();
+    }
+    _players.clear();
     _controller.dispose();
     super.dispose();
   }
