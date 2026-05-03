@@ -97,8 +97,8 @@ class SelectionPanelWidgetState extends State<SelectionPanelWidget>
               padding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  const Spacer(),
                   Text(
                     '全国: $collected / $total',
                     style: const TextStyle(
@@ -111,6 +111,37 @@ class SelectionPanelWidgetState extends State<SelectionPanelWidget>
                   Text(
                     '収集率: $rate%',
                     style: const TextStyle(color: Colors.white70, fontSize: 30),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.white70),
+                    iconSize: 30,
+                    tooltip: 'クリア',
+                    onPressed: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('収集データをクリア'),
+                          content: const Text('全ての収集した地名をクリアしますか？\nこの操作は元に戻せません。'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('キャンセル'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.red,
+                              ),
+                              child: const Text('クリア'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true && context.mounted) {
+                        await context.read<CollectionProvider>().clearAll();
+                      }
+                    },
                   ),
                 ],
               ),

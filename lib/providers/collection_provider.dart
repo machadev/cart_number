@@ -118,4 +118,16 @@ class CollectionProvider extends ChangeNotifier {
   void clearLastCompleted() {
     _lastCompletedPrefecture = null;
   }
+
+  Future<void> clearAll() async {
+    for (final pref in _prefectures) {
+      for (final plate in pref.plates) {
+        plate.collected = false;
+      }
+    }
+    _lastCompletedPrefecture = null;
+    _lastCompletedPlateNames = [];
+    await _saveData();
+    notifyListeners();
+  }
 }
