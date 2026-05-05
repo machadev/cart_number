@@ -100,18 +100,59 @@ class SelectionPanelWidgetState extends State<SelectionPanelWidget>
               child: Row(
                 children: [
                   const Spacer(),
-                  Text(
-                    '全国: $collected / $total',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 30,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        '全国: ',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30,
+                        ),
+                      ),
+                      _FixedWidthText(
+                        value: '$collected',
+                        maxValue: '$total',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30,
+                          fontFeatures: [ui.FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      Text(
+                        ' / $total',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    '収集率: $rate%',
-                    style: const TextStyle(color: Colors.white70, fontSize: 30),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        '収集率: ',
+                        style: TextStyle(color: Colors.white70, fontSize: 30),
+                      ),
+                      _FixedWidthText(
+                        value: rate,
+                        maxValue: '100.0',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 30,
+                          fontFeatures: [ui.FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      const Text(
+                        '%',
+                        style: TextStyle(color: Colors.white70, fontSize: 30),
+                      ),
+                    ],
                   ),
                   const Spacer(),
                   IconButton(
@@ -256,12 +297,36 @@ class _RegionTab extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Text(
-                    '$regionCollected/$regionTotal ($regionRate%)',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: region.baseColor,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _FixedWidthText(
+                        value: '$regionCollected',
+                        maxValue: '$regionTotal',
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: region.baseColor,
+                          fontFeatures: const [ui.FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      Text(
+                        '/$regionTotal (',
+                        style: TextStyle(fontSize: 24, color: region.baseColor),
+                      ),
+                      _FixedWidthText(
+                        value: regionRate,
+                        maxValue: '100.0',
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: region.baseColor,
+                          fontFeatures: const [ui.FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      Text(
+                        '%)',
+                        style: TextStyle(fontSize: 24, color: region.baseColor),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -402,12 +467,42 @@ class _PrefectureSection extends StatelessWidget {
                 _PrefectureNameLabel(prefecture: pref),
                 if (pref.isComplete) const _CrownIcon(),
                 const Spacer(),
-                Text(
-                  '${pref.collectedPlates}/${pref.totalPlates}  $rate%',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: pref.region.baseColor,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _FixedWidthText(
+                      value: '${pref.collectedPlates}',
+                      maxValue: '${pref.totalPlates}',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: pref.region.baseColor,
+                        fontFeatures: const [ui.FontFeature.tabularFigures()],
+                      ),
+                    ),
+                    Text(
+                      '/${pref.totalPlates}  ',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: pref.region.baseColor,
+                      ),
+                    ),
+                    _FixedWidthText(
+                      value: rate,
+                      maxValue: '100.0',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: pref.region.baseColor,
+                        fontFeatures: const [ui.FontFeature.tabularFigures()],
+                      ),
+                    ),
+                    Text(
+                      '%',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: pref.region.baseColor,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -557,6 +652,29 @@ class _PlateStarIcon extends StatelessWidget {
       Icons.star,
       size: 20,
       color: isCollected ? Colors.amber : Colors.transparent,
+    );
+  }
+}
+
+class _FixedWidthText extends StatelessWidget {
+  final String value;
+  final String maxValue;
+  final TextStyle style;
+
+  const _FixedWidthText({
+    required this.value,
+    required this.maxValue,
+    required this.style,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.centerRight,
+      children: [
+        Opacity(opacity: 0, child: Text(maxValue, style: style)),
+        Text(value, style: style, textAlign: TextAlign.right),
+      ],
     );
   }
 }
