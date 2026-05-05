@@ -1,11 +1,13 @@
-import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../data/japan_data.dart';
 import '../models/prefecture.dart';
 
 class CollectionProvider extends ChangeNotifier {
   late List<Prefecture> _prefectures;
+  String? _currentUid;
+  bool _initialized = false;
   // 最後に完成した都道府県名（花火エフェクト用）
   String? _lastCompletedPrefecture;
   // 完成した都道府県の全収集地名リスト（花火用）
@@ -23,6 +25,11 @@ class CollectionProvider extends ChangeNotifier {
   double get globalRate =>
       totalPlates > 0 ? totalCollected / totalPlates : 0.0;
 
+  CollectionProvider() {
+    _prefectures = japanPrefectures;
+    _resetAll();
+  }
+
   Prefecture? getPrefecture(String name) {
     try {
       return _prefectures.firstWhere((p) => p.name == name);
@@ -34,42 +41,76 @@ class CollectionProvider extends ChangeNotifier {
   List<Prefecture> getPrefecturesByRegion(Region region) =>
       _prefectures.where((p) => p.region == region).toList();
 
-  Future<void> loadData() async {
-    _prefectures = japanPrefectures;
+  // AuthProvider の変化を受け取る（ProxyProvider から呼ばれる）
+  void onAuthChanged(User? user) {
+    final newUid = user?.uid;
+    if (_initialized && _currentUid == newUid) return;
+    _initialized = true;
+    _loadForUser(user);
+  }
+
+  void _resetAll() {
+    for (final pref in _prefectures) {
+      for (final plate in pref.plates) {
+        plate.collected = false;
+      }
+    }
+  }
+
+  Future<void> _loadForUser(User? user) async {
+    _resetAll();
+    _lastCompletedPrefecture = null;
+    _lastCompletedPlateNames = [];
+
+    if (user != null) {
+      _currentUid = user.uid;
+      await _loadFromFirestore(user.uid);
+    } else {
+      // 未ログイン: 自動IDを生成してセッション中保持（Firestoreからは復元しない）
+      _currentUid = FirebaseFirestore.instance.collection('cart_number').doc().id;
+      debugPrint('Guest session UID: $_currentUid');
+    }
+    notifyListeners();
+  }
+
+  Future<void> _loadFromFirestore(String uid) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getString('collection_data');
-      if (saved != null) {
-        final data = jsonDecode(saved) as Map<String, dynamic>;
+      final doc = await FirebaseFirestore.instance
+          .collection('cart_number')
+          .doc(uid)
+          .get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
         for (final pref in _prefectures) {
-          final prefData = data[pref.name] as List<dynamic>?;
+          final prefData = data[pref.name] as Map<String, dynamic>?;
           if (prefData != null) {
             for (final plate in pref.plates) {
-              final found = prefData.firstWhere(
-                (p) => p['name'] == plate.name,
-                orElse: () => null,
-              );
-              if (found != null) {
-                plate.collected = found['collected'] as bool? ?? false;
-              }
+              plate.collected = prefData[plate.name] as bool? ?? false;
             }
           }
         }
       }
-    } catch (_) {}
-    notifyListeners();
+    } catch (e) {
+      debugPrint('Firestore load error: $e');
+    }
   }
 
-  Future<void> _saveData() async {
+  Future<void> _saveToFirestore() async {
+    if (_currentUid == null) return;
     try {
-      final prefs = await SharedPreferences.getInstance();
       final data = <String, dynamic>{};
       for (final pref in _prefectures) {
-        data[pref.name] =
-            pref.plates.map((p) => p.toJson()).toList();
+        data[pref.name] = {
+          for (final p in pref.plates) p.name: p.collected,
+        };
       }
-      await prefs.setString('collection_data', jsonEncode(data));
-    } catch (_) {}
+      await FirebaseFirestore.instance
+          .collection('cart_number')
+          .doc(_currentUid)
+          .set(data);
+    } catch (e) {
+      debugPrint('Firestore save error: $e');
+    }
   }
 
   void togglePlate(String prefName, String plateName) {
@@ -99,7 +140,7 @@ class CollectionProvider extends ChangeNotifier {
       _lastCompletedPlateNames = [];
     }
 
-    _saveData();
+    _saveToFirestore();
     notifyListeners();
   }
 
@@ -120,14 +161,10 @@ class CollectionProvider extends ChangeNotifier {
   }
 
   Future<void> clearAll() async {
-    for (final pref in _prefectures) {
-      for (final plate in pref.plates) {
-        plate.collected = false;
-      }
-    }
+    _resetAll();
     _lastCompletedPrefecture = null;
     _lastCompletedPlateNames = [];
-    await _saveData();
+    await _saveToFirestore();
     notifyListeners();
   }
 }
