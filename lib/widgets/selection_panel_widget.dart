@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/prefecture.dart';
@@ -455,15 +456,92 @@ class _PrefectureNameLabel extends StatelessWidget {
   }
 }
 
-class _CrownIcon extends StatelessWidget {
+class _CrownIcon extends StatefulWidget {
   const _CrownIcon();
 
   @override
+  State<_CrownIcon> createState() => _CrownIconState();
+}
+
+class _CrownIconState extends State<_CrownIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+  late final Animation<double> _glow;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+
+    _scale = Tween<double>(begin: 1.0, end: 1.18).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+    _glow = Tween<double>(begin: 4.0, end: 14.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Icon(
-      Icons.workspace_premium,
-      color: Colors.amber,
-      size: 28,
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, _) {
+        return Transform.scale(
+          scale: _scale.value,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // グロー層（背後のみ・アイコンより大きめ）
+              ImageFiltered(
+                imageFilter: ui.ImageFilter.blur(
+                  sigmaX: _glow.value,
+                  sigmaY: _glow.value,
+                ),
+                child: const Icon(
+                  Icons.workspace_premium,
+                  color: Color(0xCCFFD700),
+                  size: 36,
+                ),
+              ),
+              // アウトライン層（1px大きい暗色でくっきりさせる）
+              const Icon(
+                Icons.workspace_premium,
+                color: Color(0x447A4F00),
+                size: 39,
+              ),
+              // メインアイコン（ゴールドグラデーション・くっきり前面）
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    Color(0xFFFFEC40),
+                    Color(0xFFFFD700),
+                    Color(0xFFFF8F00),
+                    Color(0xFFFFD700),
+                    Color(0xFFFFEC40),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ).createShader(bounds),
+                child: const Icon(
+                  Icons.workspace_premium,
+                  color: Colors.white,
+                  size: 36,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
