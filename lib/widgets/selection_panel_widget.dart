@@ -465,7 +465,11 @@ class _PrefectureSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 _PrefectureNameLabel(prefecture: pref),
-                if (pref.isComplete) const _CrownIcon(),
+                SizedBox(
+                  width: 39,
+                  height: 39,
+                  child: pref.isComplete ? const _CrownIcon() : null,
+                ),
                 const Spacer(),
                 Row(
                   mainAxisSize: MainAxisSize.min,
