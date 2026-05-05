@@ -66,9 +66,8 @@ class CollectionProvider extends ChangeNotifier {
       _currentUid = user.uid;
       await _loadFromFirestore(user.uid);
     } else {
-      // 未ログイン: 自動IDを生成してセッション中保持（Firestoreからは復元しない）
-      _currentUid = FirebaseFirestore.instance.collection('cart_number').doc().id;
-      debugPrint('Guest session UID: $_currentUid');
+      _currentUid = null;
+      // 未ログイン: クリア状態のまま・保存なし
     }
     notifyListeners();
   }
