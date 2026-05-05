@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "380582041126",
+    "project_id": "appcontest-adc8f",
+    "storage_bucket": "appcontest-adc8f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:380582041126:android:25861830abf90bdf1778e7",
+        "android_client_info": {
+          "package_name": "com.example.cart_number"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBq5kZyRWamyof7DDfDi4R8YncyVp5mVuk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,16 +1,45 @@
 {
-  "hosting": {
-    "public": "build/web",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
+    "hosting": {
+        "public": "build/web",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**"
+        ],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ]
+    },
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "appcontest-adc8f",
+                    "appId": "1:380582041126:android:25861830abf90bdf1778e7",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "ios": {
+                "default": {
+                    "projectId": "appcontest-adc8f",
+                    "appId": "1:380582041126:ios:163beb440eb9ce5a1778e7",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "appcontest-adc8f",
+                    "configurations": {
+                        "android": "1:380582041126:android:25861830abf90bdf1778e7",
+                        "ios": "1:380582041126:ios:163beb440eb9ce5a1778e7",
+                        "web": "1:380582041126:web:7ec485db76703e4b1778e7"
+                    }
+                }
+            }
+        }
+    }
 }
