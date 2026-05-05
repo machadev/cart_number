@@ -46,7 +46,9 @@ class CollectionProvider extends ChangeNotifier {
     final newUid = user?.uid;
     if (_initialized && _currentUid == newUid) return;
     _initialized = true;
-    _loadForUser(user);
+    // ProxyProvider.update はビルドフェーズ中に呼ばれるため、
+    // microtask で遅延させて build 完了後に notifyListeners() を実行する
+    // Future.microtask(() => _loadForUser(user));
   }
 
   void _resetAll() {

@@ -12,7 +12,12 @@
           "package_name": "com.example.cart_number"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "380582041126-8gdokahc65jcrtv0805gnt7ht8k9no9u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBq5kZyRWamyof7DDfDi4R8YncyVp5mVuk"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "380582041126-8gdokahc65jcrtv0805gnt7ht8k9no9u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "380582041126-k4sok0q2h4qva6jt52qhkkdpoagii30c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cartNumber"
+              }
+            }
+          ]
         }
       }
     }

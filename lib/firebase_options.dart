@@ -70,6 +70,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '380582041126',
     projectId: 'appcontest-adc8f',
     storageBucket: 'appcontest-adc8f.firebasestorage.app',
+    iosClientId: '380582041126-k4sok0q2h4qva6jt52qhkkdpoagii30c.apps.googleusercontent.com',
     iosBundleId: 'com.example.cartNumber',
   );
+
 }
