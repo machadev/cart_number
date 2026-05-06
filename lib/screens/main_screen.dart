@@ -1,4 +1,6 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/collection_provider.dart';
 import '../providers/auth_provider.dart';
@@ -22,6 +24,15 @@ class _MainScreenState extends State<MainScreen> {
   List<String> _fireworksPlateNames = [];
   late CollectionProvider _provider;
   bool _listenerRegistered = false;
+  Uint8List? _explosionBytes;
+
+  @override
+  void initState() {
+    super.initState();
+    rootBundle.load('assets/sounds/explosion.mp3').then((data) {
+      if (mounted) _explosionBytes = data.buffer.asUint8List();
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -116,6 +127,7 @@ class _MainScreenState extends State<MainScreen> {
               child: IgnorePointer(
                 child: FireworksWidget(
                   plateNames: _fireworksPlateNames,
+                  explosionBytes: _explosionBytes,
                   onComplete: () {
                     if (!mounted) return;
                     final allComplete =

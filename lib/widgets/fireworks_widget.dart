@@ -1,16 +1,19 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 class FireworksWidget extends StatefulWidget {
   final VoidCallback onComplete;
   final List<String> plateNames;
+  final Uint8List? explosionBytes;
 
   const FireworksWidget({
     super.key,
     required this.onComplete,
     this.plateNames = const [],
+    this.explosionBytes,
   });
 
   @override
@@ -24,17 +27,19 @@ class _FireworksWidgetState extends State<FireworksWidget>
   final Random _random = Random();
 
   final List<Timer> _soundTimers = [];
-  final List<AudioPlayer> _players = [];
+
+  // 同時再生を許容するため固定サイズのプール
+  static const _kPoolSize = 4;
+  final List<AudioPlayer> _audioPool = [];
+  int _poolIdx = 0;
 
   Future<void> _playExplosion() async {
-    final player = AudioPlayer();
-    _players.add(player);
-    try {
-      await player.play(AssetSource('sounds/explosion.mp3'));
-    } finally {
-      _players.remove(player);
-      await player.dispose();
-    }
+    final bytes = widget.explosionBytes;
+    if (bytes == null) return;
+    final player = _audioPool[_poolIdx % _kPoolSize];
+    _poolIdx++;
+    await player.stop();
+    unawaited(player.play(BytesSource(bytes)));
   }
 
   static const _colorSets = [
@@ -49,6 +54,10 @@ class _FireworksWidgetState extends State<FireworksWidget>
   @override
   void initState() {
     super.initState();
+
+    for (int i = 0; i < _kPoolSize; i++) {
+      _audioPool.add(AudioPlayer());
+    }
 
     // ── タイミング設計（ms） ──
     const regularIntervalMs = 500;  // 通常花火の間隔
@@ -190,11 +199,11 @@ class _FireworksWidgetState extends State<FireworksWidget>
     for (final t in _soundTimers) {
       t.cancel();
     }
-    for (final p in List<AudioPlayer>.from(_players)) {
+    for (final p in _audioPool) {
       p.stop();
       p.dispose();
     }
-    _players.clear();
+    _audioPool.clear();
     _controller.dispose();
     super.dispose();
   }
