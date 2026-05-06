@@ -46,9 +46,10 @@ class CollectionProvider extends ChangeNotifier {
     final newUid = user?.uid;
     if (_initialized && _currentUid == newUid) return;
     _initialized = true;
+    _currentUid = newUid;
     // ProxyProvider.update はビルドフェーズ中に呼ばれるため、
     // microtask で遅延させて build 完了後に notifyListeners() を実行する
-    // Future.microtask(() => _loadForUser(user));
+    Future.microtask(() => _loadForUser(user));
   }
 
   void _resetAll() {
@@ -65,11 +66,7 @@ class CollectionProvider extends ChangeNotifier {
     _lastCompletedPlateNames = [];
 
     if (user != null) {
-      _currentUid = user.uid;
       await _loadFromFirestore(user.uid);
-    } else {
-      _currentUid = null;
-      // 未ログイン: クリア状態のまま・保存なし
     }
     notifyListeners();
   }
