@@ -19,6 +19,8 @@ class AuthProvider extends ChangeNotifier {
     });
   }
 
+  static const _allowedDomain = 'monstar-lab.com';
+
   Future<void> signInWithGoogle() async {
     _loading = true;
     notifyListeners();
@@ -26,7 +28,12 @@ class AuthProvider extends ChangeNotifier {
     try {
       if (kIsWeb) {
         final provider = GoogleAuthProvider();
-        await _auth.signInWithPopup(provider);
+        final result = await _auth.signInWithPopup(provider);
+        final email = result.user?.email ?? '';
+        if (!email.endsWith('@$_allowedDomain')) {
+          await _auth.signOut();
+          _errorMessage = '$_allowedDomain のアカウントでログインしてください。';
+        }
       }
     } catch (e) {
       debugPrint('Sign in error: $e');
