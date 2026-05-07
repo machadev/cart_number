@@ -20,16 +20,12 @@ class LoginScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.directions_car,
-                  size: 72,
-                  color: Color(0xFF37474F),
-                ),
+                const _LicensePlateIcon(),
                 const SizedBox(height: 16),
                 const Text(
-                  'ナンバー収集',
+                  'ナンバープレート収集',
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 36,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF37474F),
                   ),
@@ -37,7 +33,7 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 const Text(
                   '全国のナンバープレートを集めよう',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(fontSize: 20, color: Colors.grey),
                 ),
                 const SizedBox(height: 48),
                 if (auth.loading)
@@ -58,6 +54,79 @@ class LoginScreen extends StatelessWidget {
                 ],
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LicensePlateIcon extends StatelessWidget {
+  const _LicensePlateIcon();
+
+  static const _green = Color(0xFF1B5E20);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 330,
+      height: 165,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _green, width: 4.5),
+        boxShadow: const [
+          BoxShadow(color: Color(0x33000000), blurRadius: 9, offset: Offset(0, 5)),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _green, width: 1.5),
+          ),
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '・日本 500・',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: _green,
+                  letterSpacing: 2,
+                  height: 1.2,
+                ),
+              ),
+              SizedBox(height: 3),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'さ',
+                    style: TextStyle(
+                      fontSize: 45,
+                      fontWeight: FontWeight.bold,
+                      color: _green,
+                      height: 1,
+                    ),
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    '20-27',
+                    style: TextStyle(
+                      fontSize: 63,
+                      fontWeight: FontWeight.bold,
+                      color: _green,
+                      letterSpacing: 3,
+                      height: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
