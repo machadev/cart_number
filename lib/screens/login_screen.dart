@@ -23,7 +23,7 @@ class LoginScreen extends StatelessWidget {
                 const _LicensePlateIcon(),
                 const SizedBox(height: 16),
                 const Text(
-                  'ナンバープレート収集',
+                  'ナンプレ集め',
                   style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.bold,

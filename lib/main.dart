@@ -57,7 +57,7 @@ class CarNumberApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'ナンバー収集',
+        title: 'ナンプレ集め',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
